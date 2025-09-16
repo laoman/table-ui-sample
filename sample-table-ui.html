@@ -1,0 +1,358 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>vendorX Sites Table Example</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
+    <style>
+        body {
+            background-color: #e9ecf0;
+            font-family: 'Segoe UI', Arial, sans-serif;
+        }
+        .sites-container {
+            padding: 2rem 0;
+        }
+        .search-filters {
+            background: white;
+            padding: 1.8rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            margin-bottom: 2rem;
+            border: 1px solid rgba(0,0,0,0.05);
+        }
+        .form-control, .form-select {
+            border: 1px solid #e2e8f0;
+            padding: 0.6rem 1rem;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+            width: 100%;
+        }
+        .form-control:focus, .form-select:focus {
+            border-color: #3b82f6;
+            box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1);
+        }
+        .table {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+            border: 1px solid rgba(0,0,0,0.05);
+            width: 100%;
+            border-collapse: separate;
+        }
+        .table thead th {
+            background-color: #f8fafc;
+            border-bottom: 2px solid #e2e8f0;
+            padding: 1rem;
+            font-weight: 600;
+            color: #475569;
+        }
+        .table tbody td {
+            padding: 1rem;
+            border-bottom: 1px solid #e2e8f0;
+        }
+        .status-badge {
+            padding: 0.5em 1.2em;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 500;
+        }
+        .status-active {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+        .status-inactive {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        .status-pendingcommunication {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        .btn-view-details {
+            border-radius: 20px;
+            padding: 0.5em 1.2em;
+            transition: all 0.3s ease;
+            background-color: #3b82f6;
+            border: none;
+            color: white;
+            text-decoration: none;
+            display: inline-block;
+        }
+        .btn-view-details:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+            background-color: #2563eb;
+        }
+        .site-row {
+            transition: opacity 0.3s ease;
+        }
+        .site-row.hidden {
+            opacity: 0;
+            display: none;
+        }
+        .site-row:hover {
+            background-color: #f8fafc;
+        }
+        .search-filters .form-control,
+        .search-filters .form-select {
+            padding-left: 2.5rem;
+        }
+        .filter-icon {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #64748b;
+            pointer-events: none;
+        }
+        .filter-wrapper {
+            position: relative;
+        }
+        .vendor-badge {
+            padding: 0.4em 1em;
+            border-radius: 16px;
+            font-size: 0.85em;
+            font-weight: 500;
+            background-color: #f1f5f9;
+            color: #475569;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5em;
+        }
+        .vendor-badge i {
+            font-size: 0.9em;
+            color: #64748b;
+        }
+        .vendor-vendorX {
+            background-color: #e0f2fe;
+            color: #0369a1;
+        }
+        .sortable {
+            cursor: pointer;
+            user-select: none;
+        }
+        .sortable i {
+            margin-left: 0.5rem;
+            color: #94a3b8;
+        }
+        .sortable.asc i {
+            color: #3b82f6;
+            transform: rotate(180deg);
+        }
+        .sortable.desc i {
+            color: #3b82f6;
+        }
+        .sortable:hover {
+            background-color: #f1f5f9;
+        }
+        .connection-badge {
+            padding: 0.4em 1em;
+            border-radius: 16px;
+            font-size: 0.85em;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5em;
+        }
+        .connection-connected {
+            background-color: #dcfce7;
+            color: #166534;
+        }
+        .connection-partial {
+            background-color: #fef3c7;
+            color: #92400e;
+        }
+        .connection-disconnected {
+            background-color: #fee2e2;
+            color: #991b1b;
+        }
+        .row.g-3 {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+        }
+        .col-md-3, .col-md-2 {
+            flex: 1 1 18%;
+            min-width: 180px;
+        }
+        .col-md-2:last-child {
+            flex: 1 1 10%;
+            min-width: 120px;
+        }
+        @media (max-width: 900px) {
+            .row.g-3 {
+                flex-direction: column;
+                gap: 0.5rem;
+            }
+            .col-md-3, .col-md-2 {
+                min-width: 100%;
+            }
+        }
+        #resetFilters {
+            border-radius: 20px;
+            padding: 0.5em 1.2em;
+            font-size: 1em;
+            font-weight: 500;
+            background-color: #f1f5f9;
+            color: #475569;
+            border: 1px solid #e2e8f0;
+            transition: background 0.2s, color 0.2s, box-shadow 0.2s;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.05);
+        }
+
+        #resetFilters:hover, #resetFilters:focus {
+            background-color: #e0e7ef;
+            color: #2563eb;
+            border-color: #3b82f6;
+            box-shadow: 0 2px 8px rgba(59,130,246,0.08);
+            outline: none;
+        }
+    </style>
+</head>
+<body>
+<div class="sites-container">
+    <div class="container">
+        <!-- Search and Filters -->
+        <div class="search-filters">
+            <div class="row g-3">
+                <div class="col-md-3 filter-wrapper">
+                    <input type="text" id="siteSearch" class="form-control" placeholder="Search sites...">
+                    <i class="fas fa-search filter-icon"></i>
+                </div>
+                <div class="col-md-3 filter-wrapper">
+                    <select id="vendorFilter" class="form-select">
+                        <option value="">All Vendors</option>
+                        <option value="vendorX">vendorX</option>
+                        <option value="other">Other</option>
+                    </select>
+                    <i class="fas fa-industry filter-icon"></i>
+                </div>
+                <div class="col-md-2 filter-wrapper">
+                    <select id="countryFilter" class="form-select">
+                        <option value="">All Countries</option>
+                        <option value="Greece">Greece</option>
+                        <option value="Germany">Germany</option>
+                    </select>
+                    <i class="fas fa-globe filter-icon"></i>
+                </div>
+                <div class="col-md-2 filter-wrapper">
+                    <select id="statusFilter" class="form-select">
+                        <option value="">All Statuses</option>
+                        <option value="Active">Active</option>
+                        <option value="Inactive">Inactive</option>
+                        <option value="PendingCommunication">PendingCommunication</option>
+                    </select>
+                    <i class="fas fa-info-circle filter-icon"></i>
+                </div>
+                <div class="col-md-2 filter-wrapper">
+                    <select id="connectionFilter" class="form-select">
+                        <option value="">All Connections</option>
+                        <option value="connected">Connected</option>
+                        <option value="partial">Partial</option>
+                        <option value="disconnected">Disconnected</option>
+                    </select>
+                    <i class="fas fa-plug filter-icon"></i>
+                </div>
+                <div class="col-md-2">
+                    <button id="resetFilters" class="btn btn-outline-secondary w-100">
+                        Reset Filters
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Sites Table -->
+        <div class="table-responsive">
+            <table class="table">
+                <thead>
+                    <tr>
+                        <th class="sortable" data-sort="name">
+                            Name <i class="fas fa-sort"></i>
+                        </th>
+                        <th class="sortable" data-sort="vendor">
+                            Vendor <i class="fas fa-sort"></i>
+                        </th>
+                        <th class="sortable" data-sort="status">
+                            Status <i class="fas fa-sort"></i>
+                        </th>
+                        <th class="sortable" data-sort="connection">
+                            Connection Status <i class="fas fa-sort"></i>
+                        </th>
+                        <th class="sortable" data-sort="country">
+                            Country <i class="fas fa-sort"></i>
+                        </th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr class="site-row" 
+                        data-id="4017845"
+                        data-name=""
+                        data-status="Active"
+                        data-country="Greece"
+                        data-vendor="someone"
+                        data-connection="connected">
+                        <td>Athens </td>
+                        <td>
+                            <span class="vendor-badge vendor-vendorX">
+                                <i class="fa-regular fa-file"></i>
+                                Something
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-badge status-active">
+                                Active
+                            </span>
+                        </td>
+                        <td>
+                            <span class="connection-badge connection-connected">
+                                <i class="fas fa-check-circle me-1"></i>All Connected
+                            </span>
+                        </td>
+                        <td>Greece</td>
+                        <td>
+                            <a href="#" class="btn btn-primary btn-sm btn-view-details">
+                                <i class="fas fa-chart-line me-1"></i>
+                                View Details
+                            </a>
+                        </td>
+                    </tr>
+                    <tr class="site-row" 
+                        data-id="4017846"
+                        data-name="Berlin"
+                        data-status="Inactive"
+                        data-country="Germany"
+                        data-vendor="other"
+                        data-connection="disconnected">
+                        <td>Berlin</td>
+                        <td>
+                            <span class="vendor-badge">
+                                <i class="fa-regular fa-file"></i>
+                                Other
+                            </span>
+                        </td>
+                        <td>
+                            <span class="status-badge status-inactive">
+                                Inactive
+                            </span>
+                        </td>
+                        <td>
+                            <span class="connection-badge connection-disconnected">
+                                <i class="fas fa-times-circle me-1"></i>Disconnected
+                            </span>
+                        </td>
+                        <td>Germany</td>
+                        <td>
+                            <a href="#" class="btn btn-primary btn-sm btn-view-details">
+                                <i class="fas fa-chart-line me-1"></i>
+                                View Details
+                            </a>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+</body>
+</html>
